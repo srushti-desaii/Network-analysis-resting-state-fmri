@@ -204,3 +204,57 @@ compute_radius_from_W = function(W_obs) {
   r = round(avg_deg / 2)
   return(r)
 }
+
+
+# Function to estimate Weighted SWP #
+weighted_SWP = function(W_hat, n_iter , p = 1) {
+  
+  # Compute radius from observed matrix
+  r = compute_radius_from_W(W_hat)
+  # Number of nodes
+  N = nrow(W_hat)
+  
+  # Clustering coefficient and path length for observed weighted network
+  C = weighted_clustering_coeff(W_hat)
+  L = weighted_path_length(W_hat)
+  
+  # Generate weighted lattice graph
+  W_latt = generate_weighted_sw(N, r)
+  # Normalize lattice weights to match sum of observed matrix weights
+  W_latt = W_latt * (sum(W_hat) / sum(W_latt))
+  
+  # Clustering coefficient and path length for lattice network
+  C_latt = weighted_clustering_coeff(W_latt)
+  L_latt = weighted_path_length(W_latt)
+  
+  # Initialize vectors for random graph stats
+  C_vals = numeric(n_iter)
+  L_vals = numeric(n_iter)
+  
+  for (i in 1:n_iter) {
+    W_rand = rewire_graph(W_latt, p = p)
+    C_vals[i] = weighted_clustering_coeff(W_rand)
+    L_vals[i] = weighted_path_length(W_rand)
+  }
+  
+  # Mean of finite values only
+  C_rand = mean(C_vals[is.finite(C_vals)])
+  L_rand = mean(L_vals[is.finite(L_vals)])
+  
+  
+  # Normalize clustering coefficient and average path length
+  C_norm = (C_latt - C) / (C_latt - C_rand)
+  L_norm = (L - L_rand) / (L_latt - L_rand)
+  
+  # Bound normalized values to [0,1]
+  C_norm = min(max(C_norm, 0), 1)
+  L_norm = min(max(L_norm, 0), 1)
+  
+  # Compute Small World Propensity
+  theta_W = 1 - sqrt((C_norm^2 + L_norm^2) / 2)
+  
+  return(theta_W)
+}
+
+
+
