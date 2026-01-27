@@ -174,3 +174,33 @@ weighted_path_length = function(W) {
 }
 
 
+# Function to compute average 
+# degree from weighted matrix
+compute_avg_degree = function(W_obs) {
+  
+  # Convert to binary adjacency matrix
+  A = ifelse(W_obs > 0, 1, 0)
+  
+  # Remove self-connections (diagonal)
+  diag(A) = 0
+  
+  # Compute degree for each node
+  degrees = rowSums(A)
+  
+  # Compute average degree
+  avg_degree = mean(degrees)
+  
+  return(avg_degree)
+}
+
+
+# Compute appropriate r for 
+# lattice model
+compute_radius_from_W = function(W_obs) {
+  avg_deg = compute_avg_degree(W_obs)
+  
+  # In a ring lattice, each node 
+  # connects to 2*r neighbors
+  r = round(avg_deg / 2)
+  return(r)
+}
