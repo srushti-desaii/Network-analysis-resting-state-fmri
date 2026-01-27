@@ -91,3 +91,47 @@ rewire_graph = function(W_latt, p) {
   
   return(W_new)
 }
+
+
+
+# Function to calculate weighted
+# clustering coefficient
+weighted_clustering_coeff = function(W) {
+  N = nrow(W) 
+  
+  # Initialize clustering coefficients
+  Cw = numeric(N) 
+  
+  # Loop through each node to 
+  # compute clustering coefficient
+  for (i in 1:N) {
+    
+    # get neighbors and its degree
+    neighbors = which(W[i, ] > 0) 
+    k = length(neighbors)  
+    
+    if (k < 2) {
+      
+      # If there are less than two neighbors,
+      # clustering coefficient is 0
+      Cw[i] = 0  
+    } else {
+      sum_weights = 0
+      
+      # Find the maximum weight in the network
+      max_weight = max(W)  
+      
+      for (j in 1:(k-1)) {
+        for (l in (j+1):k) {
+          if (W[neighbors[j], neighbors[l]] > 0) {
+            sum_weights = sum_weights + (W[i, neighbors[j]] * W[neighbors[j], neighbors[l]] * W[neighbors[l], i])^(1/3)
+          }
+        }
+      }
+      
+      Cw[i] = sum_weights / (k * (k - 1)* max_weight)  
+    }
+  }
+  return(mean(Cw))  
+}
+
