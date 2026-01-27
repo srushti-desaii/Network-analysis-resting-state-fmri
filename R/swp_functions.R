@@ -135,3 +135,42 @@ weighted_clustering_coeff = function(W) {
   return(mean(Cw))  
 }
 
+# Function to calculate weighted 
+# characteristic path length
+weighted_path_length = function(W) {
+  
+  N = nrow(W) 
+  
+  # Invert weights (avoid division by zero)
+  W_inv = 1 / (W + (W == 0))  
+  
+  dist_matrix = matrix(Inf, nrow = N, ncol = N)  
+  diag(dist_matrix) = 0  
+  
+  # Fill distance matrix with inverse weights
+  for (i in 1:N) {
+    for (j in 1:N) {
+      if (W[i, j] > 0) {
+        dist_matrix[i, j] = W_inv[i, j] 
+      }
+    }
+  }
+  
+  # Floyd-Warshall algorithm for 
+  # all-pairs shortest paths
+  for (k in 1:N) {
+    for (i in 1:N) {
+      for (j in 1:N) {
+        dist_matrix[i, j] = min(dist_matrix[i, j], dist_matrix[i, k] + dist_matrix[k, j])
+      }
+    }
+  }
+  # Compute characteristic path 
+  # length using formula from paper
+  
+  L = sum(dist_matrix) / (N * (N - 1))
+  
+  return(L)
+}
+
+
